@@ -84,7 +84,7 @@ const ChartPost = ({ Postid }) => {
   const colors = ["#4a90e2", "#50e3c2", "#e94e77", "#f5a623", "#b2bec3"];
 
   return (
-    <ResponsiveContainer width="100%" className="mb-6 pb-6" height={300}>
+    <ResponsiveContainer width="100%" className=" pb-2" height={300}>
       <PieChart>
         <Pie
           data={chartData}

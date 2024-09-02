@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Post from "./Post";
-
 import {
   Select,
   SelectContent,
@@ -27,6 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { isAfter, isBefore, parseISO, isValid } from "date-fns"; // Importing date-fns utilities
 
 const Form = () => {
   const [showPost, setShowPost] = useState(false); // State to manage visibility
@@ -120,7 +120,7 @@ const Form = () => {
                   <SelectContent>
                     {pages_name?.map((item) => (
                       <SelectItem
-                        className=" hover:bg-gray-400"
+                        className="hover:bg-gray-400"
                         key={item.id}
                         value={item.id}
                       >
@@ -131,7 +131,7 @@ const Form = () => {
                 </Select>
               )}
             />
-            {/* {----Alert----} */}
+
             <AlertDialog className="p-0">
               <AlertDialogTrigger asChild>
                 <Button disabled={!selectedPageId}>
@@ -156,7 +156,20 @@ const Form = () => {
             <Controller
               name="startDate"
               control={control}
-              rules={{ required: "Start date is required" }}
+              rules={{
+                required: "La date de début est obligatoire",
+                validate: (value) => {
+                  const endDateVal = watch("endDate");
+                  if (
+                    value &&
+                    endDateVal &&
+                    isAfter(new Date(value), new Date(endDateVal))
+                  ) {
+                    return "La date de début ne peut pas être postérieure à la date de fin";
+                  }
+                  return true;
+                },
+              }}
               render={({ field }) => (
                 <DatePicker date={field.value} setDate={field.onChange} />
               )}
@@ -165,7 +178,24 @@ const Form = () => {
             <Controller
               name="endDate"
               control={control}
-              rules={{ required: "End date is required" }}
+              rules={{
+                required: "La date de fin est obligatoire",
+                validate: (value) => {
+                  const today = new Date();
+                  const startDateVal = startDate;
+                  if (
+                    value &&
+                    startDateVal &&
+                    isBefore(new Date(value), new Date(startDateVal))
+                  ) {
+                    return "La date de fin ne peut pas être antérieure à la date de début";
+                  }
+                  if (value && isAfter(new Date(value), today)) {
+                    return "La date de fin ne peut pas être postérieure à aujourd'hui";
+                  }
+                  return true;
+                },
+              }}
               render={({ field }) => (
                 <DatePicker date={field.value} setDate={field.onChange} />
               )}
@@ -175,9 +205,9 @@ const Form = () => {
               name="number"
               control={control}
               rules={{
-                required: "Number of posts is required", // Required field validation
+                required: "Le nombre de messages est requis",
                 validate: (value) =>
-                  value > 0 || "The number must be a higher than 0", // Custom validation for positive numbers
+                  value > 0 || "Le nombre doit être supérieur à 0",
               }}
               render={({ field }) => (
                 <Input
@@ -190,7 +220,7 @@ const Form = () => {
               )}
             />
           </div>
-          <div className=" flex justify-center gap-4">
+          <div className="flex justify-center gap-4">
             <div>
               {errors.selectedOption && (
                 <p className="text-red-500">{errors.selectedOption.message}</p>
@@ -211,7 +241,6 @@ const Form = () => {
                 <p className="text-red-500">{errors.number.message}</p>
               )}
             </div>
-            <div></div>
           </div>
           <div className="flex justify-center mt-4">
             <Button type="submit" className="max-w-[1010px] w-full">
