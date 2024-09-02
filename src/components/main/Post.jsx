@@ -43,9 +43,16 @@ const Post = ({ selectedPageId, limit, from, end }) => {
   if (isError) {
     return <div>Error loading posts.</div>;
   }
+  if (page_posts.length == 0) {
+    return (
+      <div className="text-black p-4 m-4 flex justify-center w-full h-auto text-2xl">
+        <p> Cette page n'a pas de publication aux dates indiquées</p>
+      </div>
+    );
+  }
 
-  const cards = (page_posts || []).map((item, index) => (
-    <Card key={index} className="w-[600px] shadow-md">
+  const cards = page_posts.map((item, index) => (
+    <Card key={index} className="w-[600px] shadow-lg">
       <div className="">
         {/* This parent div will align its children horizontally */}
 
@@ -60,7 +67,7 @@ const Post = ({ selectedPageId, limit, from, end }) => {
               />
             </center>
             {/* Content section taking the other half width */}
-            <h3 className="text-base font-semibold my-2 break-words">
+            <h3 className="text-base font-semibold my-6 break-words">
               {item.message || "ce post n'a pas de légende"}
             </h3>
           </div>

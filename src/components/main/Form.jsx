@@ -119,7 +119,11 @@ const Form = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {pages_name?.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
+                      <SelectItem
+                        className=" hover:bg-gray-400"
+                        key={item.id}
+                        value={item.id}
+                      >
                         {item.name}
                       </SelectItem>
                     ))}
