@@ -46,22 +46,24 @@ const Post = ({ selectedPageId, limit, from, end }) => {
 
   const cards = (page_posts || []).map((item, index) => (
     <Card key={index} className="w-[600px] shadow-md">
-      <div className="flex">
+      <div className="">
         {/* This parent div will align its children horizontally */}
-        <CardHeader className="w-1/2 p-0">
-          {/* Image section taking half the width of the card */}
-          <img
-            src={item.full_picture || no_image}
-            alt="Post Image"
-            className="w-full h-[350px] object-center"
-          />
-        </CardHeader>
-        <CardContent className="w-1/2 p-4  flex flex-col justify-start">
-          {/* Content section taking the other half width */}
-          <h3 className="text-base font-semibold mb-2 break-words">
-            {item.message || "ce post n'a pas de légende"}
-          </h3>
 
+        <CardContent className="w-full p-4  flex flex-col justify-start">
+          <div className="">
+            {" "}
+            <center>
+              <img
+                src={item.full_picture || no_image}
+                alt="Post Image"
+                className="object-fill w-[400px] h-[400px] rounded-lg shadow-xl"
+              />
+            </center>
+            {/* Content section taking the other half width */}
+            <h3 className="text-base font-semibold my-2 break-words">
+              {item.message || "ce post n'a pas de légende"}
+            </h3>
+          </div>
           <p className="text-lg font-semibold flex gap-2 mt-4">
             <span>
               <Calendar size={25} />
@@ -86,7 +88,7 @@ const Post = ({ selectedPageId, limit, from, end }) => {
           </span>{" "}
         </div>
       </CardFooter>
-      <div> {/* <ChartPost Postid={item.id} /> */}</div>
+
       <ChartPost Postid={item.id} />
     </Card>
   ));

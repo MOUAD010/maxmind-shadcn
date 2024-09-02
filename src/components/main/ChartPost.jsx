@@ -1,6 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -34,7 +35,22 @@ const ChartPost = ({ Postid }) => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className=" flex justify-center mt-8 ">
+        {/* <div className=" bg-blue-500 w-20 h-20 rounded-full flex justify-center items-center animate-bounce">
+          <p className=" p-4 m-4 text-white">Loading..</p>
+        </div> */}
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-lg font-medium text-center animate-pulse">
+            Loading your content...
+          </p>
+          <p className="text-sm text-muted-foreground text-center">
+            This may take a few moments
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
@@ -68,7 +84,7 @@ const ChartPost = ({ Postid }) => {
   const colors = ["#4a90e2", "#50e3c2", "#e94e77", "#f5a623", "#b2bec3"];
 
   return (
-    <ResponsiveContainer width="100%" className="mb-6 pb-6" height={500}>
+    <ResponsiveContainer width="100%" className="mb-6 pb-6" height={300}>
       <PieChart>
         <Pie
           data={chartData}

@@ -211,7 +211,7 @@ const Form = () => {
           </div>
           <div className="flex justify-center mt-4">
             <Button type="submit" className="max-w-[1010px] w-full">
-              Generate
+              Générer les données
             </Button>
           </div>
         </form>
