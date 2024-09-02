@@ -10,7 +10,7 @@ import { Heart, MessageCircle, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import SkeletonPost from "./SkeletonPost";
-// import ChartPost from "./ChartPost";
+import ChartPost from "./ChartPost";
 import no_image from "../../assets/noimage.jpg";
 
 const Post = ({ selectedPageId, limit, from, end }) => {
@@ -87,6 +87,7 @@ const Post = ({ selectedPageId, limit, from, end }) => {
         </div>
       </CardFooter>
       <div> {/* <ChartPost Postid={item.id} /> */}</div>
+      <ChartPost Postid={item.id} />
     </Card>
   ));
 
