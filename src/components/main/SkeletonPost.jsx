@@ -9,54 +9,28 @@ import { Skeleton } from "../ui/skeleton";
 
 const SkeletonPost = () => {
   return (
-    <div className="flex gap-2">
-      <Card className="w-[600px] shadow-md">
-        <div className="flex">
-          {/* Skeleton structure to match the Card component */}
-          <CardHeader className="w-1/2 p-0">
-            <Skeleton className="w-full h-[350px] object-center rounded-lg" />
-          </CardHeader>
-          <CardContent className="w-1/2 p-4 flex flex-col justify-start">
-            <h3 className="text-lg font-semibold mb-2">
-              <Skeleton className="h-4 w-[200px]" />
-            </h3>
-            <Skeleton className="h-4 w-[150px] mt-4" />
-          </CardContent>
+    <div className="flex justify-center mt-8">
+      <Card className="w-[1220px] shadow-lg mb-4">
+        <div className="flex flex-row px-6 my-4">
+          {/* Image Skeleton */}
+          <div className="w-1/3 p-2">
+            <Skeleton className="w-full h-[500px] rounded-lg shadow-lg" />
+          </div>
+          {/* Text and actions Skeleton */}
+          <div className="w-2/3 p-4">
+            <CardContent className="flex flex-col">
+              <Skeleton className="h-4 w-[75%] mb-4" />
+              <Skeleton className="h-4 w-[50%] mb-4" />
+              <Skeleton className="h-4 w-[40%] mb-6" />
+              <div className="flex justify-start gap-6 mt-4">
+                <Skeleton className="h-4 w-[30px]" />
+                <Skeleton className="h-4 w-[30px]" />
+              </div>
+            </CardContent>
+          </div>
         </div>
         <CardFooter className="flex justify-between p-4 pt-4">
-          <div title="reaction" className="flex justify-center items-center">
-            <Skeleton className="h-4 w-[30px] mr-2" />
-            <Skeleton className="h-4 w-[20px]" />
-          </div>
-          <div title="comments" className="flex justify-center items-center">
-            <Skeleton className="h-4 w-[30px] mr-2" />
-            <Skeleton className="h-4 w-[20px]" />
-          </div>
-        </CardFooter>
-      </Card>
-
-      {/* Duplicate the card to match your design */}
-      <Card className="w-[600px] shadow-md">
-        <div className="flex">
-          <CardHeader className="w-1/2 p-0">
-            <Skeleton className="w-full h-[350px] object-center rounded-lg" />
-          </CardHeader>
-          <CardContent className="w-1/2 p-4 flex flex-col justify-start">
-            <h3 className="text-lg font-semibold mb-2">
-              <Skeleton className="h-4 w-[200px]" />
-            </h3>
-            <Skeleton className="h-4 w-[150px] mt-4" />
-          </CardContent>
-        </div>
-        <CardFooter className="flex justify-between p-4 pt-4">
-          <div title="reaction" className="flex justify-center items-center">
-            <Skeleton className="h-4 w-[30px] mr-2" />
-            <Skeleton className="h-4 w-[20px]" />
-          </div>
-          <div title="comments" className="flex justify-center items-center">
-            <Skeleton className="h-4 w-[30px] mr-2" />
-            <Skeleton className="h-4 w-[20px]" />
-          </div>
+          <Skeleton className="h-4 w-[100px]" />
         </CardFooter>
       </Card>
     </div>

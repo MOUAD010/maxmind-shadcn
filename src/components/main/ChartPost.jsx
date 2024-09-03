@@ -84,38 +84,44 @@ const ChartPost = ({ Postid }) => {
   const colors = ["#4a90e2", "#50e3c2", "#e94e77", "#f5a623", "#b2bec3"];
 
   return (
-    <ResponsiveContainer width="100%" className=" pb-2" height={300}>
-      <PieChart>
-        <Pie
-          data={chartData}
-          dataKey="value"
-          nameKey="name"
-          cx="50%"
-          cy="50%"
-          outerRadius={150}
-          label
-        >
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
-          ))}
-        </Pie>
-        <Tooltip
-          contentStyle={{ backgroundColor: "#fff", border: "1px solid #ddd" }}
-          itemStyle={{ color: "#333" }}
-          formatter={(value, name) => [`${name}: ${value}`]}
-        />
-        <Legend
-          layout="vertical"
-          align="right"
-          verticalAlign="middle"
-          formatter={(value, entry, index) => (
-            <span style={{ color: colors[index % colors.length] }}>
-              {value}
-            </span>
-          )}
-        />
-      </PieChart>
-    </ResponsiveContainer>
+    <div className=" w-full flex justify-center">
+      {" "}
+      <ResponsiveContainer width="100%" className=" pb-2" height={300}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={150}
+            label
+          >
+            {chartData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={colors[index % colors.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip
+            contentStyle={{ backgroundColor: "#fff", border: "1px solid #ddd" }}
+            itemStyle={{ color: "#333" }}
+            formatter={(value, name) => [`${name}: ${value}`]}
+          />
+          <Legend
+            layout="vertical"
+            align="right"
+            verticalAlign="middle"
+            formatter={(value, entry, index) => (
+              <span style={{ color: colors[index % colors.length] }}>
+                {value}
+              </span>
+            )}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
