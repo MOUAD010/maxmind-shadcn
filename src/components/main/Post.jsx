@@ -1,19 +1,25 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import axios from "axios";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Heart, MessageCircle, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import SkeletonPost from "./SkeletonPost";
-import ChartPost from "./ChartPost";
 import ShadcnChart from "./ShadcnChart";
 import no_image from "../../assets/noimage.jpg";
 import RightDrawer from "../ui/RightDrawer";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import PDFDocument from "./DataToPdf";
 import { Button } from "../ui/button";
+import Spinner from "../ui/spinner"; // Assuming you have a Spinner component for loading
 
 const Post = ({ selectedPageId, limit, from, end }) => {
+  const chartRef = useRef();
+  const [chartImage, setChartImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [pdfPrepared, setPdfPrepared] = useState(false); // New state for PDF preparation
+
   const getPagePosts = async () => {
     const response = await axios.post(
       `https://meta-api-eight.vercel.app/api/v1/page/${selectedPageId}/feeds`,
@@ -21,50 +27,26 @@ const Post = ({ selectedPageId, limit, from, end }) => {
     );
     return response.data.data.data;
   };
-  const componentRef = useRef(null);
 
   const handleDownloadPdf = async () => {
-    const element = componentRef.current;
+    setLoading(true); // Start loading state
 
-    if (element) {
-      // Ensure all images are loaded
-      const images = Array.from(element.querySelectorAll("img"));
-      const loadPromises = images.map(
-        (img) =>
-          new Promise((resolve) => {
-            if (img.complete) {
-              resolve();
-            } else {
-              img.onload = () => resolve();
-              img.onerror = () => resolve();
-            }
-          })
-      );
+    if (chartRef.current) {
+      // Capture the chart with higher quality settings
+      const canvas = await html2canvas(chartRef.current, {
+        scale: 3, // Increase the scale for better resolution
+        backgroundColor: null, // Maintain transparency if the background is transparent
+        useCORS: true, // Handle cross-origin images if any are present
+        logging: false, // Disable logging to console for performance
+        imageTimeout: 15000, // Timeout for loading images (increase if necessary)
+      });
 
-      await Promise.all(loadPromises);
-
-      const canvas = await html2canvas(element, { useCORS: true });
-      const imgData = canvas.toDataURL("image/png");
-
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 220;
-      const pageHeight = 150;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 1;
-
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      pdf.save("download.pdf");
+      const imgData = canvas.toDataURL("image/png"); // Convert to data URL
+      setChartImage(imgData); // Set the chart image
     }
+
+    setLoading(false); // Stop loading state
+    setPdfPrepared(true); // Set PDF prepared state to true
   };
 
   const {
@@ -98,9 +80,9 @@ const Post = ({ selectedPageId, limit, from, end }) => {
   }
 
   const cards = page_posts.map((item, index) => (
-    <Card key={index} className=" w-[1120px] shadow-lg mb-4 ">
+    <Card key={index} className="w-[1120px] shadow-lg mb-4">
       {/* Image section */}
-      <div className=" flex flex-row justify-start items-start px-6  ">
+      <div className="flex flex-row justify-start items-start px-6">
         <img
           src={item.full_picture || no_image}
           alt="Post Image"
@@ -115,16 +97,15 @@ const Post = ({ selectedPageId, limit, from, end }) => {
             </p>
             <div>
               <div className="flex justify-between">
-                {" "}
-                <p className="text-sm  mt-2 flex items-center gap-2">
+                <p className="text-sm mt-2 flex items-center gap-2">
                   <Calendar size={20} />
                   {moment(item.created_time).format("MMMM DD, YYYY")}
                 </p>
                 <div className="flex justify-start gap-2">
                   <div className="">
                     <div className="flex justify-center mt-2 gap-1">
-                      <Heart className=" mt-1" size={19} />
-                      <span className=" text-base">
+                      <Heart className="mt-1" size={19} />
+                      <span className="text-base">
                         {item.reactions.summary.total_count}
                       </span>
                     </div>
@@ -132,17 +113,17 @@ const Post = ({ selectedPageId, limit, from, end }) => {
                   <div className="">
                     {item.comments.summary.total_count > 0 ? (
                       <RightDrawer>
-                        <div className="flex justify-center mt-2  gap-1 cursor-pointer">
+                        <div className="flex justify-center mt-2 gap-1 cursor-pointer">
                           <MessageCircle className="mt-1" size={19} />
-                          <span className=" text-base">
+                          <span className="text-base">
                             {item.comments.summary.total_count}
                           </span>
                         </div>
                       </RightDrawer>
                     ) : (
-                      <div className="flex justify-center mt-2  gap-1">
+                      <div className="flex justify-center mt-2 gap-1">
                         <MessageCircle className="mt-1" size={19} />
-                        <span className=" text-base">
+                        <span className="text-base">
                           {item.comments.summary.total_count}
                         </span>
                       </div>
@@ -154,8 +135,7 @@ const Post = ({ selectedPageId, limit, from, end }) => {
           </CardContent>
         </div>
       </div>
-      <div className="mt-4 h-full flex">
-        {/* <ChartPost Postid={item.id} /> */}
+      <div className="mt-4 h-full flex" ref={chartRef}>
         <ShadcnChart />
       </div>
     </Card>
@@ -163,12 +143,39 @@ const Post = ({ selectedPageId, limit, from, end }) => {
 
   return (
     <div>
-      <div className="my-4  flex justify-center">
-        <Button onClick={handleDownloadPdf}>Dowloand Data To PDF</Button>
+      <div className="my-4 flex justify-center">
+        {loading ? (
+          <div className="flex items-center gap-2">
+            Loading..... {/* Display a spinner while loading */}
+          </div>
+        ) : pdfPrepared && chartImage ? (
+          <PDFDownloadLink
+            fileName="Data.pdf"
+            style={{
+              textDecoration: "none",
+              padding: "10px 20px",
+              color: "#ffffff",
+              backgroundColor: "#007bff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+            document={<PDFDocument data={page_posts} chartImage={chartImage} />}
+          >
+            {({ loading }) =>
+              loading ? "Preparing document..." : "Download PDF"
+            }
+          </PDFDownloadLink>
+        ) : (
+          <Button
+            onClick={handleDownloadPdf}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            Prepare The PDF
+          </Button>
+        )}
       </div>
-      <div className="my-6 flex flex-col items-center" ref={componentRef}>
-        {cards}
-      </div>
+      <div className="my-6 flex flex-col items-center">{cards}</div>
     </div>
   );
 };

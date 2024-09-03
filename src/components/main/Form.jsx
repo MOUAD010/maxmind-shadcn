@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { format } from "date-fns";
+import { format, isAfter } from "date-fns";
 import axios from "axios";
 import Post from "./Post";
 import {
@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 const Form = () => {
   const [showPost, setShowPost] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({});
@@ -45,13 +46,26 @@ const Form = () => {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
+    setValue,
   } = useForm({
     defaultValues: {
       selectedOption: "",
-      startDate: new Date(),
+      startDate: new Date("2024-01-01"),
       endDate: new Date(),
     },
+    criteriaMode: "all", // Ensure all validation rules are checked
   });
+
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
+
+  // Update the endDate if startDate is set to a date later than the current endDate
+  React.useEffect(() => {
+    if (startDate && endDate && isAfter(startDate, endDate)) {
+      setValue("endDate", startDate);
+    }
+  }, [startDate, endDate, setValue]);
 
   const onSubmit = (data) => {
     const formattedStartDate = format(data.startDate, "yyyy-MM-01");
@@ -118,6 +132,7 @@ const Form = () => {
                 <PagePreview PageId={selectedPageId} />
               </DialogContent>
             </Dialog>
+
             {/* Start Date Picker */}
             <Controller
               name="startDate"
@@ -133,6 +148,12 @@ const Form = () => {
             {/* End Date Picker */}
             <Controller
               name="endDate"
+              rules={{
+                validate: (value) =>
+                  !startDate || !value || !isAfter(startDate, value)
+                    ? true
+                    : "End Date must be after Start Date",
+              }}
               control={control}
               render={({ field }) => (
                 <MonthsPicker
@@ -142,7 +163,7 @@ const Form = () => {
               )}
             />
 
-            <Button type="submit" className=" w-40">
+            <Button type="submit" className="w-40">
               Générer les données
             </Button>
           </div>
@@ -164,7 +185,7 @@ const Form = () => {
       {showPost && (
         <Post
           selectedPageId={selectedOptions.selectedOption}
-          limit="100"
+          limit="10"
           from={selectedOptions.startDate}
           end={selectedOptions.endDate}
         />
