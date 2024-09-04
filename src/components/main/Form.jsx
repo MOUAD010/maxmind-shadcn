@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { format, isAfter } from "date-fns";
-import axios from "axios";
 import Post from "./Post";
 import {
   Select,
@@ -14,34 +13,24 @@ import { Button } from "@/components/ui/button";
 import { useForm, Controller } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import PagePreview from "./PagePreview";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { getPages } from "../../utils/api";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import MonthsRangePicker from "../ui/MonthsRangePicker";
 
 const Form = () => {
   const [showPost, setShowPost] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [selectedPageId, setSelectedPageId] = useState("");
 
-  const getPages = async () => {
-    const response = await axios.post(
-      "https://meta-api-eight.vercel.app/api/v1/accounts",
-      { limit: "10", after: "", before: "" }
-    );
-    return response.data.data.data;
-  };
-
   const { data: pages_name } = useQuery({
     queryKey: ["pages"],
     queryFn: getPages,
+    staleTime: 3600000, // 1 hour in milliseconds
+    cacheTime: 3600000, // 1 hour in milliseconds
+    refetchOnWindowFocus: false, // Prevent refetch on window focus
+    refetchOnReconnect: false, // Prevent refetch on network reconnect
+    refetchInterval: false, // No automatic refetch interval
   });
-
   const {
     control,
     handleSubmit,
@@ -73,8 +62,8 @@ const Form = () => {
 
     const selectedData = {
       ...data,
-      startDate: formattedStartDate,
-      endDate: formattedEndDate,
+      startDate: data.dateRange.startDate,
+      endDate: data.dateRange.endDate,
     };
 
     console.log(selectedData);
@@ -120,7 +109,6 @@ const Form = () => {
                 </Select>
               )}
             />
-
             <Dialog>
               <DialogTrigger
                 className=" disabled:bg-slate-500 disabled:cursor-not-allowed text-sm text-white py-2 font-medium rounded-lg px-2 bg-[#0f172a]"
@@ -132,9 +120,8 @@ const Form = () => {
                 <PagePreview PageId={selectedPageId} />
               </DialogContent>
             </Dialog>
-
             {/* Start Date Picker */}
-            <Controller
+            {/* <Controller
               name="startDate"
               control={control}
               render={({ field }) => (
@@ -143,10 +130,9 @@ const Form = () => {
                   onDateChange={field.onChange}
                 />
               )}
-            />
-
+            /> */}
             {/* End Date Picker */}
-            <Controller
+            {/* <Controller
               name="endDate"
               rules={{
                 validate: (value) =>
@@ -161,8 +147,18 @@ const Form = () => {
                   onDateChange={field.onChange}
                 />
               )}
+            /> */}
+            <Controller
+              name="dateRange"
+              control={control}
+              render={({ field }) => (
+                <MonthsRangePicker
+                  selectedDate={field.value}
+                  onRangeChange={field.onChange}
+                />
+              )}
             />
-
+            {/* <MonthsRangePicker onRangeChange={handleRangeChange} /> */}
             <Button type="submit" className="w-40">
               Générer les données
             </Button>
@@ -185,7 +181,7 @@ const Form = () => {
       {showPost && (
         <Post
           selectedPageId={selectedOptions.selectedOption}
-          limit="10"
+          limit="1"
           from={selectedOptions.startDate}
           end={selectedOptions.endDate}
         />

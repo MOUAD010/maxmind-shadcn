@@ -1,65 +1,40 @@
-import React, { useRef, useState } from "react";
-import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Heart, MessageCircle, Calendar } from "lucide-react";
+import React, { useRef, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import moment from "moment";
 import SkeletonPost from "./SkeletonPost";
-import ShadcnChart from "./ShadcnChart";
-import no_image from "../../assets/noimage.jpg";
-import RightDrawer from "../ui/RightDrawer";
-import html2canvas from "html2canvas";
+import PostCard from "./PostCard"; // Import the new component
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PDFDocument from "./DataToPdf";
 import { Button } from "../ui/button";
-import Spinner from "../ui/spinner"; // Assuming you have a Spinner component for loading
+import { getPagePosts } from "../../utils/api";
+import { handleDownloadPdf } from "@/utils/utility";
 
 const Post = ({ selectedPageId, limit, from, end }) => {
   const chartRef = useRef();
   const [chartImage, setChartImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [pdfPrepared, setPdfPrepared] = useState(false); // New state for PDF preparation
-
-  const getPagePosts = async () => {
-    const response = await axios.post(
-      `https://meta-api-eight.vercel.app/api/v1/page/${selectedPageId}/feeds`,
-      { limit: limit, since: from, until: end }
-    );
-    return response.data.data.data;
+  const [pdfPrepared, setPdfPrepared] = useState(false);
+  const handlePreparePDF = () => {
+    handleDownloadPdf(chartRef, setChartImage, setLoading, setPdfPrepared);
   };
-
-  const handleDownloadPdf = async () => {
-    setLoading(true); // Start loading state
-
-    if (chartRef.current) {
-      // Capture the chart with higher quality settings
-      const canvas = await html2canvas(chartRef.current, {
-        scale: 3, // Increase the scale for better resolution
-        backgroundColor: null, // Maintain transparency if the background is transparent
-        useCORS: true, // Handle cross-origin images if any are present
-        logging: false, // Disable logging to console for performance
-        imageTimeout: 15000, // Timeout for loading images (increase if necessary)
-      });
-
-      const imgData = canvas.toDataURL("image/png"); // Convert to data URL
-      setChartImage(imgData); // Set the chart image
-    }
-
-    setLoading(false); // Stop loading state
-    setPdfPrepared(true); // Set PDF prepared state to true
-  };
-
+  useEffect(() => {
+    setLoading(false);
+    setPdfPrepared(false);
+    setChartImage(null);
+  }, [selectedPageId]);
   const {
     data: page_posts,
     isLoading,
     isError,
+    isFetching,
   } = useQuery({
     queryKey: ["posts", selectedPageId, limit, from, end],
-    queryFn: getPagePosts,
+    queryFn: () => getPagePosts(selectedPageId, limit, from, end),
     enabled: !!selectedPageId,
+    refetchOnWindowFocus: false,
+    staleTime: 10 * 60 * 1000,
   });
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <div className="flex justify-center mt-8 gap-2">
         <SkeletonPost />
@@ -68,6 +43,7 @@ const Post = ({ selectedPageId, limit, from, end }) => {
   }
 
   if (isError) {
+    console.error("Error fetching posts:", isError);
     return <div>Error loading posts.</div>;
   }
 
@@ -79,75 +55,11 @@ const Post = ({ selectedPageId, limit, from, end }) => {
     );
   }
 
-  const cards = page_posts.map((item, index) => (
-    <Card key={index} className="w-[1120px] shadow-lg mb-4">
-      {/* Image section */}
-      <div className="flex flex-row justify-start items-start px-6">
-        <img
-          src={item.full_picture || no_image}
-          alt="Post Image"
-          className="object-fit h-[350px] w-[30%] max-h-[440px] mt-8"
-        />
-
-        {/* Text and actions section */}
-        <div className="w-[70%] p-4">
-          <CardContent className="flex flex-col">
-            <p className="text-base my-4 break-words">
-              {item.message || "Ce post n'a pas de légende"}
-            </p>
-            <div>
-              <div className="flex justify-between">
-                <p className="text-sm mt-2 flex items-center gap-2">
-                  <Calendar size={20} />
-                  {moment(item.created_time).format("MMMM DD, YYYY")}
-                </p>
-                <div className="flex justify-start gap-2">
-                  <div className="">
-                    <div className="flex justify-center mt-2 gap-1">
-                      <Heart className="mt-1" size={19} />
-                      <span className="text-base">
-                        {item.reactions.summary.total_count}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="">
-                    {item.comments.summary.total_count > 0 ? (
-                      <RightDrawer>
-                        <div className="flex justify-center mt-2 gap-1 cursor-pointer">
-                          <MessageCircle className="mt-1" size={19} />
-                          <span className="text-base">
-                            {item.comments.summary.total_count}
-                          </span>
-                        </div>
-                      </RightDrawer>
-                    ) : (
-                      <div className="flex justify-center mt-2 gap-1">
-                        <MessageCircle className="mt-1" size={19} />
-                        <span className="text-base">
-                          {item.comments.summary.total_count}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </div>
-      </div>
-      <div className="mt-4 h-full flex" ref={chartRef}>
-        <ShadcnChart />
-      </div>
-    </Card>
-  ));
-
   return (
     <div>
       <div className="my-4 flex justify-center">
         {loading ? (
-          <div className="flex items-center gap-2">
-            Loading..... {/* Display a spinner while loading */}
-          </div>
+          <div className="flex items-center gap-2">Loading.....</div>
         ) : pdfPrepared && chartImage ? (
           <PDFDownloadLink
             fileName="Data.pdf"
@@ -168,14 +80,18 @@ const Post = ({ selectedPageId, limit, from, end }) => {
           </PDFDownloadLink>
         ) : (
           <Button
-            onClick={handleDownloadPdf}
+            onClick={handlePreparePDF}
             className="bg-blue-500 hover:bg-blue-600 text-white"
           >
             Prepare The PDF
           </Button>
         )}
       </div>
-      <div className="my-6 flex flex-col items-center">{cards}</div>
+      <div className="my-6 flex flex-col items-center">
+        {page_posts.map((item, index) => (
+          <PostCard key={index} item={item} chartRef={chartRef} />
+        ))}
+      </div>
     </div>
   );
 };

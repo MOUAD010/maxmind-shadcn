@@ -5,19 +5,29 @@ import {
   Document,
   StyleSheet,
   Image,
+  Font,
 } from "@react-pdf/renderer";
 import moment from "moment";
+import no_image from "../../assets/noimage.jpg";
+import rubik from "../../assets/Rubik-Regular.ttf";
+import logo from "../../assets/longbanner.png";
+// Register font from local file
+Font.register({
+  family: "Rubik",
+  src: rubik, // Update this path according to where you placed the font
+});
 
 const styles = StyleSheet.create({
   page: {
+    fontFamily: "Rubik",
     backgroundColor: "#ffffff",
     padding: 20,
   },
   card: {
     border: "1px solid #e0e0e0",
     borderRadius: 5,
-    marginBottom: 20,
-    padding: 20, // Increased padding for better spacing
+    marginBottom: 10,
+    padding: 15, // Increased padding for better spacing
     boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
   },
   imageSection: {
@@ -25,19 +35,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-start",
     alignItems: "flex-start",
-    marginBottom: 10,
+    marginBottom: 0,
   },
   image: {
     width: "30%",
-    height: "auto",
+    height: "80%",
     marginRight: 20, // Spacing between image and content
   },
   contentSection: {
     width: "70%",
   },
   text: {
-    fontSize: 14, // Adjusted font size to match the component
-    marginBottom: 10,
+    fontSize: 10, // Adjusted font size to match the component
+    marginBottom: 5,
   },
   date: {
     fontSize: 12,
@@ -51,25 +61,49 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   statItem: {
-    fontSize: 12, // Font size for stats
+    fontSize: 10, // Font size for stats
     marginRight: 20,
     display: "flex",
     alignItems: "center",
   },
   chartImage: {
-    marginTop: 15,
     width: "100%",
     height: "auto",
     borderRadius: 5,
+    marginTop: -25,
   },
 });
 
 const PDFDocument = ({ data, chartImage }) => {
   return (
     <Document>
-      <Page>
-        <Text>Hi</Text>
+      <Page
+        style={{
+          display: "flex",
+          justifyContent: "center", // Centers content vertically
+          alignItems: "center", // Centers content horizontally
+          height: "100vh", // Ensures the page takes up full viewport height
+        }}
+      >
+        <View
+          style={{
+            display: "flex",
+            justifyContent: "center", // Centers content vertically within View
+            alignItems: "center", // Centers content horizontally within View
+            textAlign: "center",
+          }}
+        >
+          <Text style={{ marginBottom: 2, fontSize: 30 }}>
+            Social Media Report
+          </Text>
+          <Text style={{ marginBottom: 15 }}>By</Text>
+          <Image
+            src={logo}
+            style={{ width: 350, height: 200, borderRadius: 10 }}
+          />
+        </View>
       </Page>
+
       <Page style={styles.page}>
         {data.map((post, index) => (
           <View key={index} style={styles.card}>
@@ -101,8 +135,25 @@ const PDFDocument = ({ data, chartImage }) => {
           </View>
         ))}
       </Page>
-      <Page>
-        <Text>Hi</Text>
+      <Page
+        style={{
+          display: "flex",
+          justifyContent: "center", // Centers content vertically
+          alignItems: "center", // Centers content horizontally
+          height: "100vh", // Ensures the page takes up full viewport height
+        }}
+      >
+        <View
+          style={{
+            display: "flex",
+            justifyContent: "center", // Centers content vertically within View
+            alignItems: "center", // Centers content horizontally within View
+            textAlign: "center",
+          }}
+        >
+          <Text style={{ marginBottom: 2, fontSize: 30 }}>Thank </Text>
+          <Text style={{ marginBottom: 2, fontSize: 30 }}>you</Text>
+        </View>
       </Page>
     </Document>
   );
